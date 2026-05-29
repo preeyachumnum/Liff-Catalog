@@ -864,6 +864,110 @@
       50% { transform: scale(1.05); filter: drop-shadow(0 0 15px rgba(6, 199, 85, 0.5)); }
       100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(6, 199, 85, 0.2)); }
     }
+    
+    /* Payment Option UI */
+    .payment-options {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    
+    .payment-option-card {
+      flex: 1;
+      padding: 1rem 0.75rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .payment-option-card:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    
+    .payment-option-card.active {
+      background: rgba(6, 199, 85, 0.08);
+      border: 2px solid var(--line-green);
+      box-shadow: 0 4px 15px rgba(6, 199, 85, 0.15);
+    }
+    
+    .payment-option-card.active span {
+      color: #ffffff !important;
+    }
+    
+    .payment-details-box {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--border-color);
+      padding: 1.25rem;
+      border-radius: 18px;
+      margin-bottom: 1.25rem;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .slip-upload-area {
+      position: relative;
+      border: 1.5px dashed rgba(255, 255, 255, 0.15);
+      padding: 1.25rem;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(0, 0, 0, 0.15);
+    }
+    
+    .slip-upload-area:hover {
+      border-color: var(--line-green);
+      background: rgba(6, 199, 85, 0.02);
+    }
+    
+    .slip-preview-container {
+      position: relative;
+      margin-top: 1rem;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      display: none;
+    }
+    
+    .slip-preview-img {
+      width: 100%;
+      max-height: 200px;
+      object-fit: contain;
+      background: #000;
+      display: block;
+    }
+    
+    .slip-remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(239, 68, 68, 0.85);
+      border: none;
+      color: #ffffff;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    
+    .slip-remove-btn:hover {
+      background: #ef4444;
+      transform: scale(1.1);
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
@@ -993,6 +1097,69 @@
           </div>
         </form>
       </div>
+      
+      <!-- VIEW 3: เลือกช่องทางและชำระเงิน -->
+      <div class="drawer-view" id="paymentMethodView">
+        <h4 style="font-weight: 700; font-size: 1.05rem; margin-bottom: 1rem; color: var(--accent-blue);">
+          💳 วิธีการชำระเงิน
+        </h4>
+        
+        <!-- แท็บเลือกวิธีชำระเงิน -->
+        <div class="payment-options">
+          <div class="payment-option-card active" id="payNowCard" onclick="selectPaymentMethod('now')">
+            <span style="font-size: 1.5rem; display: block; margin-bottom: 0.35rem;">💵</span>
+            <span style="font-size: 0.8rem; font-weight: 700; color: #ffffff;">โอนชำระทันที</span>
+          </div>
+          <div class="payment-option-card" id="payLaterCard" onclick="selectPaymentMethod('later')">
+            <span style="font-size: 1.5rem; display: block; margin-bottom: 0.35rem;">💬</span>
+            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">ชำระภายหลังผ่านแชท</span>
+          </div>
+        </div>
+
+        <!-- รายละเอียดโอนเงินทันที (พร้อมแนบสลิป) -->
+        <div id="payNowDetails" class="payment-details-box">
+          <div style="text-align: center; margin-bottom: 1.15rem; background: rgba(0,0,0,0.15); padding: 0.85rem; border-radius: 12px;">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.2rem;">ธนาคารกสิกรไทย (KBANK)</div>
+            <div style="font-size: 1.15rem; font-weight: 700; color: #ffffff; letter-spacing: 1px; margin-bottom: 0.2rem;">091-0-63661-7</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">ชื่อบัญชี: บจก. เอไอ เอเจนต์ ช็อป</div>
+          </div>
+          
+          <!-- QR Code PromptPay แบบระบุยอดเงิน -->
+          <div style="text-align: center; margin-bottom: 1.15rem;">
+            <img id="promptPayQrImg" src="https://placehold.co/200x200?text=Generating+QR..." alt="PromptPay QR" style="max-width: 150px; border-radius: 12px; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.4); background: #fff;">
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem; font-weight: 500;">สแกนเพื่อจ่ายด้วยแอปธนาคารใดก็ได้</div>
+          </div>
+
+          <!-- ช่องอัปโหลดไฟล์สลิป -->
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+              <span>📂 แนบหลักฐานสลิปโอนเงิน</span>
+              <span style="color: #f87171; font-size: 0.7rem; font-weight: 600;">*จำเป็นต้องระบุ</span>
+            </label>
+            
+            <div class="slip-upload-area" onclick="document.getElementById('slipInput').click()">
+              <span style="font-size: 1.3rem; display: block; margin-bottom: 0.25rem;">📷</span>
+              <span id="uploadAreaText" style="font-size: 0.8rem; color: var(--text-muted);">กดเพื่อเลือกรูปภาพสลิป</span>
+              <input type="file" id="slipInput" accept="image/*" style="display: none;" onchange="handleSlipSelect(event)">
+            </div>
+            
+            <!-- พรีวิวสลิป -->
+            <div id="slipPreviewContainer" class="slip-preview-container">
+              <img id="slipPreviewImg" src="" class="slip-preview-img">
+              <button type="button" class="slip-remove-btn" onclick="clearSlipSelect()">&times;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- รายละเอียดโอนเงินภายหลัง (บอทส่งคิวอาร์เข้าแชท) -->
+        <div id="payLaterDetails" class="payment-details-box" style="display: none; text-align: center; padding: 1.5rem 1rem;">
+          <span style="font-size: 2.2rem; display: block; margin-bottom: 0.75rem;">🤖</span>
+          <div style="font-size: 0.95rem; font-weight: 700; color: #ffffff; margin-bottom: 0.5rem;">บอทจะส่ง QR Code ให้ทางแชท LINE</div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.6; max-width: 320px; margin: 0 auto;">
+            หลังจากกดปุ่ม "ยืนยันการสั่งซื้อ" ระบบจะบันทึกรายการคำสั่งซื้อของคุณ และให้บอทส่งบิลพร้อม QR Code ชำระเงินตรงเข้าแชท LINE ของคุณทันที เพื่อให้สะดวกต่อการสแกนจ่ายภายหลัง
+          </p>
+        </div>
+      </div>
     </div>
     
     <div class="drawer-footer">
@@ -1005,8 +1172,8 @@
       <button type="button" class="order-btn" id="drawerActionBtn" onclick="proceedToShipping()">
         📦 ดำเนินการสั่งซื้อ
       </button>
-      <button type="button" class="order-btn" id="drawerBackBtn" onclick="backToCart()" style="display: none; background: rgba(255,255,255,0.05); margin-top: 0.5rem; border: 1px solid var(--border-color);">
-        ⬅️ ย้อนกลับไปตะกร้า
+      <button type="button" class="order-btn" id="drawerBackBtn" onclick="handleBackButton()" style="display: none; background: rgba(255,255,255,0.05); margin-top: 0.5rem; border: 1px solid var(--border-color);">
+        ⬅️ ย้อนกลับ
       </button>
     </div>
   </div>
@@ -1041,6 +1208,11 @@
     let activeCategory = 'all';
     let searchQuery = '';
     let currentLiffView = 'cart'; // cart, shipping
+    
+    let selectedPaymentMethod = 'now'; // now = จ่ายทันที, later = จ่ายภายหลัง
+    let slipBase64 = '';
+    let slipFileName = '';
+    const PROMPTPAY_ID = '0910636617';
     
     // ข้อมูลจำลองสำหรับทดสอบนอก LINE (Local Debug)
     let currentUser = {
@@ -1388,42 +1560,149 @@
       }).join('');
     }
     
-    // === โฟลว์การเช็คเอาต์ / ยืนยันข้อมูลจัดส่ง ===
+    // === โฟลว์การเช็คเอาต์ / เลือกช่องทางชำระเงิน / ยืนยันการสั่งซื้อ ===
     
+    function selectPaymentMethod(method) {
+      selectedPaymentMethod = method;
+      
+      const payNowCard = document.getElementById('payNowCard');
+      const payLaterCard = document.getElementById('payLaterCard');
+      const payNowDetails = document.getElementById('payNowDetails');
+      const payLaterDetails = document.getElementById('payLaterDetails');
+      const actionBtn = document.getElementById('drawerActionBtn');
+      
+      if (method === 'now') {
+        payNowCard.classList.add('active');
+        payLaterCard.classList.remove('active');
+        payNowCard.querySelector('span:last-child').style.color = '#ffffff';
+        payLaterCard.querySelector('span:last-child').style.color = 'var(--text-muted)';
+        
+        payNowDetails.style.display = 'block';
+        payLaterDetails.style.display = 'none';
+        
+        actionBtn.innerText = '✅ ยืนยันการสั่งซื้อและชำระเงิน';
+      } else {
+        payNowCard.classList.remove('active');
+        payLaterCard.classList.add('active');
+        payNowCard.querySelector('span:last-child').style.color = 'var(--text-muted)';
+        payLaterCard.querySelector('span:last-child').style.color = '#ffffff';
+        
+        payNowDetails.style.display = 'none';
+        payLaterDetails.style.display = 'block';
+        
+        actionBtn.innerText = '💬 ยืนยันการสั่งซื้อ (ชำระภายหลัง)';
+      }
+    }
+    
+    function handleSlipSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (file.size > 4 * 1024 * 1024) {
+        alert('ขออภัย! ขนาดรูปภาพสลิปใหญ่เกินไป (ไม่ควรเกิน 4MB) กรุณาเลือกรูปอื่น');
+        event.target.value = '';
+        return;
+      }
+      
+      slipFileName = file.name;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        slipBase64 = e.target.result;
+        document.getElementById('slipPreviewImg').src = slipBase64;
+        document.getElementById('slipPreviewContainer').style.display = 'block';
+        document.getElementById('uploadAreaText').innerText = `เลือกไฟล์: ${file.name}`;
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    function clearSlipSelect() {
+      slipBase64 = '';
+      slipFileName = '';
+      document.getElementById('slipInput').value = '';
+      document.getElementById('slipPreviewImg').src = '';
+      document.getElementById('slipPreviewContainer').style.display = 'none';
+      document.getElementById('uploadAreaText').innerText = 'กดเพื่อเลือกรูปภาพสลิป';
+    }
+
     function proceedToShipping() {
       if (cart.length === 0) return;
       
       if (currentLiffView === 'cart') {
-        // สลับไปแสดงหน้าฟอร์มที่อยู่จัดส่ง
+        // สลับไปฟอร์มจัดส่ง
         document.getElementById('cartListView').classList.remove('active');
         document.getElementById('shippingFormView').classList.add('active');
         
         document.getElementById('drawerBackBtn').style.display = 'block';
-        document.getElementById('drawerActionBtn').innerText = '✅ ยืนยันคำสั่งซื้อทั้งหมด';
-        document.getElementById('summaryLabel').innerText = 'ราคารวมชำระ';
+        document.getElementById('drawerActionBtn').innerText = '💳 ดำเนินการต่อ (ชำระเงิน)';
+        document.getElementById('summaryLabel').innerText = 'ราคารวมสินค้า';
         currentLiffView = 'shipping';
-      } else {
-        // หากอยู่หน้าฟอร์มอยู่แล้ว ให้ทำรายการสั่งซื้อ
-        // บังคับให้ตรวจสอบ validation ของฟอร์มจัดส่ง
+      } else if (currentLiffView === 'shipping') {
+        // ตรวจสอบที่อยู่จัดส่ง
         const form = document.getElementById('shippingForm');
         if (!form.checkValidity()) {
           form.reportValidity();
           return;
         }
         
-        // ดำเนินการสั่งเช็คเอาต์ส่งข้อมูลข้าม API
+        // สลับไปหน้าจอชำระเงิน (VIEW 3)
+        document.getElementById('shippingFormView').classList.remove('active');
+        document.getElementById('paymentMethodView').classList.add('active');
+        
+        // เจนภาพ QR Code PromptPay ตามยอดราคารวม
+        const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        document.getElementById('promptPayQrImg').src = `https://promptpay.io/${PROMPTPAY_ID}/${totalPrice.toFixed(2)}.png`;
+        
+        selectPaymentMethod(selectedPaymentMethod);
+        
+        document.getElementById('summaryLabel').innerText = 'ยอดเงินที่ต้องโอน';
+        currentLiffView = 'payment';
+      } else if (currentLiffView === 'payment') {
+        // ป้องกันการกดยืนยันหากเลือกชำระทันทีแต่ยังไม่อัปสลิป
+        if (selectedPaymentMethod === 'now' && !slipBase64) {
+          alert('🚨 กรุณาแนบไฟล์สลิปหลักฐานการโอนเงินก่อนยืนยันคำสั่งซื้อครับ\n\n(หรือสลับเป็นช่องทาง "ชำระภายหลังผ่านแชท" เพื่อให้บอทส่งคิวอาร์เข้าแชทได้ครับ)');
+          return;
+        }
+        
         triggerCheckoutSubmit();
+      }
+    }
+    
+    function handleBackButton() {
+      if (currentLiffView === 'payment') {
+        // ย้อนกลับจากหน้าชำระเงินไปหน้าจัดส่ง
+        document.getElementById('paymentMethodView').classList.remove('active');
+        document.getElementById('shippingFormView').classList.add('active');
+        
+        document.getElementById('drawerActionBtn').innerText = '💳 ดำเนินการต่อ (ชำระเงิน)';
+        document.getElementById('summaryLabel').innerText = 'ราคารวมสินค้า';
+        currentLiffView = 'shipping';
+      } else if (currentLiffView === 'shipping') {
+        // ย้อนกลับจากหน้าจัดส่งไปหน้าตะกร้าสินค้า
+        document.getElementById('shippingFormView').classList.remove('active');
+        document.getElementById('cartListView').classList.add('active');
+        
+        document.getElementById('drawerBackBtn').style.display = 'none';
+        document.getElementById('drawerActionBtn').innerText = '📦 ดำเนินการสั่งซื้อ';
+        document.getElementById('summaryLabel').innerText = 'ยอดรวมทั้งหมด';
+        currentLiffView = 'cart';
       }
     }
     
     function backToCart() {
       document.getElementById('shippingFormView').classList.remove('active');
+      const paymentView = document.getElementById('paymentMethodView');
+      if (paymentView) {
+        paymentView.classList.remove('active');
+      }
       document.getElementById('cartListView').classList.add('active');
       
       document.getElementById('drawerBackBtn').style.display = 'none';
       document.getElementById('drawerActionBtn').innerText = '📦 ดำเนินการสั่งซื้อ';
       document.getElementById('summaryLabel').innerText = 'ยอดรวมทั้งหมด';
       currentLiffView = 'cart';
+      
+      clearSlipSelect();
     }
     
     function triggerCheckoutSubmit() {
@@ -1431,9 +1710,8 @@
       const phone = document.getElementById('customerPhone').value.trim();
       const address = document.getElementById('customerAddress').value.trim();
       
-      showLoader('กำลังบันทึกคำสั่งซื้อและจัดส่งบิล...');
+      showLoader('กำลังบันทึกคำสั่งซื้อ...');
       
-      // เตรียมข้อมูลตะกร้าสินค้าเพื่อส่งไปที่หลังบ้าน
       const cartDataJson = JSON.stringify(cart.map(item => ({
         productId: item.productId,
         productName: item.productName,
@@ -1441,40 +1719,47 @@
         qty: item.qty
       })));
       
+      const payload = {
+        action: 'createOrder',
+        userId: currentUser.userId,
+        displayName: currentUser.displayName,
+        cartItems: cartDataJson,
+        customerName: name,
+        phone: phone,
+        address: address,
+        slipData: selectedPaymentMethod === 'now' ? (slipBase64 || '') : '',
+        slipName: selectedPaymentMethod === 'now' ? (slipFileName || '') : ''
+      };
+      
       if (BACKEND_API_URL && BACKEND_API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
-        // ยิงข้อมูลคำสั่งซื้อผ่าน REST API หลังบ้าน
-        const url = `${BACKEND_API_URL}?action=createOrder&userId=${encodeURIComponent(currentUser.userId)}&displayName=${encodeURIComponent(currentUser.displayName)}&cartItems=${encodeURIComponent(cartDataJson)}&customerName=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&address=${encodeURIComponent(address)}`;
-        
-        fetch(url)
-          .then(response => response.json())
-          .then(res => {
-            hideLoader();
-            if (res.error) {
-              alert('สั่งซื้อล้มเหลว: ' + res.error);
-              return;
-            }
-            closeCartDrawer();
-            
-            // ล้างข้อมูลตะกร้าสินค้าทั้งหมดหลังสั่งซื้อสำเร็จ
-            cart = [];
-            updateCartUI();
-            renderProducts();
-            
-            // แสดงหน้าสั่งสำเร็จ
-            document.getElementById('modalBackdrop').classList.add('active');
-            document.getElementById('successModal').classList.add('active');
-          })
-          .catch(err => {
-            hideLoader();
-            console.error('API Checkout Error:', err);
-            fallbackCheckout(cartDataJson, name, phone, address);
-          });
+        // ส่งคำสั่งซื้อแบบ POST แทนเพื่อให้รองรับรูปสลิป Base64 ขนาดใหญ่ได้
+        fetch(BACKEND_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8' // ใช้ text/plain เพื่อเลี่ยงการติด Preflight CORS ใน Apps Script
+          },
+          body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(res => {
+          hideLoader();
+          if (res.error) {
+            alert('สั่งซื้อล้มเหลว: ' + res.error);
+            return;
+          }
+          handleCheckoutSuccess(res.status);
+        })
+        .catch(err => {
+          hideLoader();
+          console.error('API Checkout Error:', err);
+          fallbackCheckout(payload);
+        });
       } else {
-        fallbackCheckout(cartDataJson, name, phone, address);
+        fallbackCheckout(payload);
       }
     }
     
-    function fallbackCheckout(cartDataJson, name, phone, address) {
+    function fallbackCheckout(payload) {
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(function(jsonString) {
@@ -1484,23 +1769,45 @@
               alert('สั่งซื้อล้มเหลว: ' + res.error);
               return;
             }
-            closeCartDrawer();
-            cart = [];
-            updateCartUI();
-            renderProducts();
-            
-            document.getElementById('modalBackdrop').classList.add('active');
-            document.getElementById('successModal').classList.add('active');
+            handleCheckoutSuccess(res.status);
           })
           .withFailureHandler(function(err) {
             hideLoader();
             alert('ล้มเหลวในการเชื่อมต่อระบบหลังบ้าน: ' + err.toString());
           })
-          .createOrderFromLiff(currentUser.userId, currentUser.displayName, cartDataJson, name, phone, address);
+          .createOrderFromLiff(
+            payload.userId, 
+            payload.displayName, 
+            payload.cartItems, 
+            payload.customerName, 
+            payload.phone, 
+            payload.address, 
+            payload.slipData, 
+            payload.slipName
+          );
       } else {
         hideLoader();
         alert('กรุณาตั้งค่า BACKEND_API_URL ก่อนทำรายการเช็คเอาต์');
       }
+    }
+    
+    function handleCheckoutSuccess(status) {
+      closeCartDrawer();
+      cart = [];
+      updateCartUI();
+      renderProducts();
+      
+      const successTitle = status === 'Paid' ? 'ชำระเงินและสั่งซื้อสำเร็จ!' : 'สั่งซื้อสินค้าสำเร็จ!';
+      const successDesc = status === 'Paid'
+        ? 'ระบบได้รับการโอนชำระและอัปโหลดหลักฐานสลิปเงินของคุณเรียบร้อยแล้ว รายละเอียดคำสั่งซื้อจะถูกส่งตรงเข้าแชท LINE ของคุณทันทีครับ'
+        : 'ระบบได้ส่งรายละเอียดออเดอร์ บิลชำระเงิน และ QR Code PromptPay สำหรับการชำระเงินตรงเข้าที่หน้าแชท LINE ของคุณเรียบร้อยแล้ว';
+      
+      const modal = document.getElementById('successModal');
+      modal.querySelector('h3').innerText = successTitle;
+      modal.querySelector('p').innerText = successDesc;
+      
+      document.getElementById('modalBackdrop').classList.add('active');
+      modal.classList.add('active');
     }
     
     function showLoader(text) {
