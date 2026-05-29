@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LINE Catalog - แคตตาล็อกสินค้า</title>
+  
+  <!-- โหลด Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- โหลด LINE LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  
+  <style>
+    :root {
+      --bg-primary: #060b13;
+      --bg-secondary: #0d1527;
+      --bg-card: rgba(22, 32, 59, 0.45);
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --line-green: #06C755;
+      --line-green-hover: #05b04b;
+      --line-green-glow: rgba(6, 199, 85, 0.25);
+      
+      --accent-blue: #38bdf8;
+      --accent-gradient: linear-gradient(135deg, #06C755 0%, #10b981 100%);
+      
+      --border-color: rgba(255, 255, 255, 0.05);
+      --border-glow: rgba(6, 199, 85, 0.2);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(6, 199, 85, 0.07) 0px, transparent 40%),
+        radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.05) 0px, transparent 40%);
+      overflow-x: hidden;
+    }
+
+    /* Floating Header */
+    header {
+      background: rgba(13, 21, 39, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 1rem 1.25rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    
+    .profile-img-container {
+      position: relative;
+      width: 42px;
+      height: 42px;
+    }
+    
+    .profile-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px solid var(--line-green);
+      object-fit: cover;
+      background-color: var(--bg-secondary);
+      box-shadow: 0 0 10px var(--line-green-glow);
+    }
+    
+    .profile-img-container::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 10px;
+      height: 10px;
+      background-color: #22c55e;
+      border: 2px solid var(--bg-secondary);
+      border-radius: 50%;
+    }
+    
+    .welcome-text {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.05em;
+    }
+    
+    .user-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    
+    /* Cart Button Header */
+    .cart-btn-header {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      padding: 0.6rem 0.9rem;
+      border-radius: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+    
+    .cart-btn-header:active {
+      transform: scale(0.9);
+      background: var(--line-green-glow);
+      border-color: var(--line-green);
+    }
+    
+    .cart-count-badge {
+      background: var(--line-green);
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.15rem 0.4rem;
+      border-radius: 99px;
+      min-width: 18px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(6, 199, 85, 0.4);
+    }
+    
+    /* Search Box */
+    .search-wrapper {
+      padding: 1rem 1.25rem 0.5rem 1.25rem;
+    }
+    
+    .search-container {
+      position: relative;
+      width: 100%;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.75rem;
+      background-color: rgba(22, 32, 59, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.3s;
+    }
+    
+    .search-input:focus {
+      border-color: var(--line-green);
+      box-shadow: 0 0 15px rgba(6, 199, 85, 0.15);
+      background-color: rgba(22, 32, 59, 0.8);
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+    
+    /* Category tabs */
+    .tabs-outer {
+      position: sticky;
+      top: 75px;
+      z-index: 90;
+      background: rgba(6, 11, 19, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .tabs-container {
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      gap: 0.6rem;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+    
+    .tabs-container::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .tab {
+      padding: 0.5rem 1.15rem;
+      border-radius: 9999px;
+      background-color: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .tab.active {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      border-color: transparent;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(6, 199, 85, 0.35);
+      transform: translateY(-1px);
+    }
+    
+    /* Main Content Grid */
+    .content {
+      flex: 1;
+      padding: 1.25rem;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    
+    @media (min-width: 768px) {
+      .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+      }
+    }
+    
+    /* Premium Product Card */
+    .product-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+    
+    .product-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--line-green-glow);
+    }
+    
+    .img-box {
+      width: 100%;
+      padding-top: 100%;
+      position: relative;
+      background-color: rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    
+    .product-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    
+    .product-card:hover .product-img {
+      transform: scale(1.06);
+    }
+    
+    .cat-tag {
+      position: absolute;
+      top: 0.75rem;
+      left: 0.75rem;
+      background-color: rgba(6, 11, 19, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 0.25rem 0.6rem;
+      border-radius: 8px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--line-green);
+      border: 1px solid rgba(6, 199, 85, 0.25);
+      z-index: 2;
+    }
+    
+    /* Info in Card */
+    .product-info {
+      padding: 0.85rem 1rem 1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    
+    .product-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.35rem;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 1.3em;
+    }
+    
+    .product-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.85rem;
+      line-height: 1.4;
+      flex: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 2.8em;
+    }
+    
+    .price-stock-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.85rem;
+      gap: 0.25rem;
+    }
+    
+    .price {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+    }
+    
+    .stock-status {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.2rem 0.45rem;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    
+    .stock-status::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    
+    .stock-status.available {
+      background-color: rgba(34, 197, 94, 0.1);
+      color: #4ade80;
+    }
+    .stock-status.available::before {
+      background-color: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
+    }
+    
+    .stock-status.empty {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+    }
+    .stock-status.empty::before {
+      background-color: #ef4444;
+    }
+    
+    /* Interactive Card Buttons (Shopee Style) */
+    .card-action-container {
+      margin-top: auto;
+    }
+    
+    .qty-selector-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0.25rem;
+    }
+    
+    .qty-card-btn {
+      width: 32px;
+      height: 32px;
+      background: rgba(255,255,255,0.05);
+      border: none;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .qty-card-btn:active {
+      transform: scale(0.9);
+      background: var(--line-green);
+    }
+    
+    .qty-card-val {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #ffffff;
+    }
+    
+    /* Cart Button */
+    .order-btn {
+      width: 100%;
+      background: var(--accent-gradient);
+      color: #ffffff;
+      border: none;
+      padding: 0.65rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 10px rgba(6, 199, 85, 0.15);
+    }
+    
+    .order-btn:hover {
+      box-shadow: 0 6px 15px rgba(6, 199, 85, 0.3);
+    }
+    
+    .order-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .order-btn:disabled {
+      background: #1e293b;
+      color: var(--text-muted);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    
+    /* Sliding Cart Drawer (ลิ้นชักตะกร้าสินค้า) */
+    .cart-drawer-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(6, 11, 19, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    
+    .cart-drawer-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    .cart-drawer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 85%;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      border-radius: 28px 28px 0 0;
+      z-index: 1010;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -15px 40px rgba(0,0,0,0.5);
+    }
+    
+    @media (min-width: 768px) {
+      .cart-drawer {
+        max-width: 500px;
+        right: 0;
+        left: auto;
+        height: 100%;
+        border-radius: 28px 0 0 28px;
+        transform: translateX(100%);
+        border-top: none;
+        border-left: 1px solid var(--border-color);
+      }
+    }
+    
+    .cart-drawer.active {
+      transform: translateY(0);
+    }
+    
+    @media (min-width: 768px) {
+      .cart-drawer.active {
+        transform: translateX(0);
+      }
+    }
+    
+    .drawer-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .drawer-close-btn {
+      background: rgba(255,255,255,0.05);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: #ffffff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* View Switcher */
+    .drawer-view-container {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .drawer-view {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      padding: 1.5rem;
+    }
+    
+    .drawer-view.active {
+      display: flex;
+    }
+    
+    /* Cart Items list */
+    .cart-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .cart-item-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(255,255,255,0.02);
+      padding: 0.75rem 1rem;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .cart-item-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid var(--border-color);
+    }
+    
+    .cart-item-info {
+      flex: 1;
+    }
+    
+    .cart-item-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.2rem;
+    }
+    
+    .cart-item-price {
+      font-size: 0.85rem;
+      color: var(--accent-blue);
+      font-weight: 700;
+    }
+    
+    /* Quantity Control in Drawer */
+    .qty-selector-drawer {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.25rem 0.5rem;
+      border-radius: 10px;
+    }
+    
+    .qty-drawer-btn {
+      background: none;
+      border: none;
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0.1rem 0.3rem;
+    }
+    
+    .qty-drawer-val {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #ffffff;
+      min-width: 15px;
+      text-align: center;
+    }
+    
+    /* Checkout Form Fields */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: rgba(6, 11, 19, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: #ffffff;
+      outline: none;
+      font-size: 0.9rem;
+      transition: all 0.25s;
+    }
+    
+    .form-control:focus {
+      border-color: var(--line-green);
+      box-shadow: 0 0 10px rgba(6, 199, 85, 0.15);
+      background: rgba(6, 11, 19, 0.8);
+    }
+    
+    textarea.form-control {
+      resize: none;
+    }
+    
+    /* Footer section of Drawer */
+    .drawer-footer {
+      padding: 1.25rem 1.5rem;
+      border-top: 1px solid var(--border-color);
+      background: rgba(13, 21, 39, 0.8);
+      margin-top: auto;
+    }
+    
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    
+    .summary-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    
+    .summary-total {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+    }
+    
+    /* Skeleton Card Loader */
+    .skeleton-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 310px;
+    }
+    
+    .shimmer {
+      background: linear-gradient(90deg, rgba(22,32,59,0.1) 25%, rgba(255,255,255,0.05) 50%, rgba(22,32,59,0.1) 75%);
+      background-size: 200% 100%;
+      animation: loading-shimmer 1.5s infinite;
+    }
+    
+    @keyframes loading-shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    
+    .skeleton-img {
+      width: 100%;
+      height: 160px;
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+    
+    .skeleton-info {
+      padding: 1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    
+    .skeleton-title {
+      height: 1rem;
+      width: 80%;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+    
+    .skeleton-text {
+      height: 0.75rem;
+      width: 95%;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+    
+    .skeleton-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: auto;
+      margin-bottom: 0.5rem;
+    }
+    
+    .skeleton-price {
+      height: 1.1rem;
+      width: 40%;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+    
+    .skeleton-btn {
+      height: 2rem;
+      width: 100%;
+      border-radius: 12px;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+    
+    /* Overlay Loader */
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(6, 11, 19, 0.85);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      display: none;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .spinner {
+      border: 3px solid rgba(255,255,255,0.05);
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border-left-color: var(--line-green);
+      animation: spin 1s linear infinite;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 0 15px rgba(6, 199, 85, 0.2);
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 2.25rem 2rem;
+      width: 88%;
+      max-width: 400px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+      z-index: 1100;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+    }
+    
+    .modal.active {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(6, 11, 19, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1090;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    .modal-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      display: inline-block;
+      animation: pulse-glow 2s infinite;
+    }
+    
+    @keyframes pulse-glow {
+      0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(6, 199, 85, 0.2)); }
+      50% { transform: scale(1.05); filter: drop-shadow(0 0 15px rgba(6, 199, 85, 0.5)); }
+      100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(6, 199, 85, 0.2)); }
+    }
+  </style>
+</head>
+<body>
+  
+  <!-- Header -->
+  <header>
+    <div class="profile-section">
+      <div class="profile-img-container">
+        <img id="userPicture" src="https://placehold.co/100?text=Profile" class="profile-img" alt="Profile">
+      </div>
+      <div>
+        <div class="welcome-text">ยินดีต้อนรับ</div>
+        <div class="user-name" id="userName">กำลังโหลดข้อมูล...</div>
+      </div>
+    </div>
+    
+    <!-- ปุ่มเปิดตะกร้า -->
+    <div class="cart-btn-header" onclick="openCartDrawer()" title="เปิดตะกร้าสินค้า">
+      <span style="font-size: 1.25rem;">🛒</span>
+      <span id="cartCountBadge" class="cart-count-badge">0</span>
+    </div>
+  </header>
+  
+  <!-- Search Bar -->
+  <div class="search-wrapper">
+    <div class="search-container">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" class="search-input" placeholder="ค้นหาชื่อสินค้าหรือหมวดหมู่..." oninput="handleSearch()">
+    </div>
+  </div>
+  
+  <!-- Category Navigation -->
+  <div class="tabs-outer">
+    <div class="tabs-container" id="categoryTabs">
+      <div class="tab active" onclick="filterCategory('all')">ทั้งหมด</div>
+    </div>
+  </div>
+  
+  <!-- Main Catalog Grid -->
+  <div class="content">
+    <div class="products-grid" id="productsGrid">
+      <!-- Skeleton Loaders -->
+      <div class="skeleton-card">
+        <div class="skeleton-img shimmer"></div>
+        <div class="skeleton-info">
+          <div class="skeleton-title shimmer"></div>
+          <div class="skeleton-text shimmer"></div>
+          <div class="skeleton-row">
+            <div class="skeleton-price shimmer"></div>
+          </div>
+          <div class="skeleton-btn shimmer"></div>
+        </div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-img shimmer"></div>
+        <div class="skeleton-info">
+          <div class="skeleton-title shimmer"></div>
+          <div class="skeleton-text shimmer"></div>
+          <div class="skeleton-row">
+            <div class="skeleton-price shimmer"></div>
+          </div>
+          <div class="skeleton-btn shimmer"></div>
+        </div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-img shimmer"></div>
+        <div class="skeleton-info">
+          <div class="skeleton-title shimmer"></div>
+          <div class="skeleton-text shimmer"></div>
+          <div class="skeleton-row">
+            <div class="skeleton-price shimmer"></div>
+          </div>
+          <div class="skeleton-btn shimmer"></div>
+        </div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-img shimmer"></div>
+        <div class="skeleton-info">
+          <div class="skeleton-title shimmer"></div>
+          <div class="skeleton-text shimmer"></div>
+          <div class="skeleton-row">
+            <div class="skeleton-price shimmer"></div>
+          </div>
+          <div class="skeleton-btn shimmer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Sliding Cart Drawer (ลิ้นชักตะกร้าสินค้า) -->
+  <div class="cart-drawer-backdrop" id="cartDrawerBackdrop" onclick="closeCartDrawer()"></div>
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="drawer-header">
+      <h3 style="font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+        🛒 ตะกร้าสินค้าของคุณ
+      </h3>
+      <button class="drawer-close-btn" onclick="closeCartDrawer()">&times;</button>
+    </div>
+    
+    <div class="drawer-view-container">
+      <!-- VIEW 1: สรุปรายการในตะกร้า -->
+      <div class="drawer-view active" id="cartListView">
+        <div class="cart-items-list" id="cartItemsList">
+          <!-- รายการสินค้าจะแสดงที่นี่ -->
+        </div>
+      </div>
+      
+      <!-- VIEW 2: กรอกข้อมูลการจัดส่ง -->
+      <div class="drawer-view" id="shippingFormView">
+        <h4 style="font-weight: 700; font-size: 1rem; margin-bottom: 1.25rem; color: var(--accent-blue);">
+          📍 ข้อมูลและที่อยู่จัดส่ง
+        </h4>
+        <form id="shippingForm" onsubmit="handleCheckout(event)">
+          <div class="form-group">
+            <label for="customerName">ชื่อผู้รับสินค้า</label>
+            <input type="text" id="customerName" class="form-control" required placeholder="เช่น สมชาย ใจดี">
+          </div>
+          
+          <div class="form-group">
+            <label for="customerPhone">เบอร์โทรศัพท์ติดต่อ</label>
+            <input type="tel" id="customerPhone" class="form-control" required placeholder="เช่น 0891234567" pattern="[0-9]{9,10}">
+          </div>
+          
+          <div class="form-group">
+            <label for="customerAddress">ที่อยู่สำหรับจัดส่ง</label>
+            <textarea id="customerAddress" class="form-control" rows="3" required placeholder="ระบุ บ้านเลขที่, ถนน, ตำบล, อำเภอ, จังหวัด, รหัสไปรษณีย์..."></textarea>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div class="drawer-footer">
+      <div class="summary-row">
+        <span class="summary-label" id="summaryLabel">ยอดรวมทั้งหมด</span>
+        <span class="summary-total" id="summaryTotal">฿0</span>
+      </div>
+      
+      <!-- ปุ่มดำเนินการ -->
+      <button type="button" class="order-btn" id="drawerActionBtn" onclick="proceedToShipping()">
+        📦 ดำเนินการสั่งซื้อ
+      </button>
+      <button type="button" class="order-btn" id="drawerBackBtn" onclick="backToCart()" style="display: none; background: rgba(255,255,255,0.05); margin-top: 0.5rem; border: 1px solid var(--border-color);">
+        ⬅️ ย้อนกลับไปตะกร้า
+      </button>
+    </div>
+  </div>
+  
+  <!-- Loading Overlay -->
+  <div class="loader-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div id="loaderText" style="font-size: 0.95rem; font-weight: 500;">กำลังตรวจสอบผู้ใช้...</div>
+  </div>
+  
+  <!-- Success Modal -->
+  <div class="modal-backdrop" id="modalBackdrop"></div>
+  <div class="modal" id="successModal">
+    <div class="modal-icon">🎉</div>
+    <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; color: #ffffff;">สั่งซื้อสินค้าสำเร็จ!</h3>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; line-height: 1.5;">
+      ระบบได้ส่งรายละเอียดออเดอร์ บิลชำระเงิน และ QR Code PromptPay สำหรับจำลองการสั่งซื้อตรงเข้าที่หน้าแชท LINE ของคุณเรียบร้อยแล้ว
+    </p>
+    <button class="order-btn" onclick="closeLiffWindow()">ตกลง (กลับสู่หน้าแชท)</button>
+  </div>
+
+  <script>
+    // =================================================================
+    // CONFIGURATION: ตั้งค่าลิงก์ Web App URL จาก Google Apps Script (ลงท้ายด้วย /exec)
+    // สำหรับนำไปรันบน Vercel, Netlify หรือโฮสติ้งภายนอกเพื่อหลีกเลี่ยงแบนเนอร์แจ้งเตือนของ Google
+    // =================================================================
+    const BACKEND_API_URL = "https://script.google.com/macros/s/AKfycbySWrK8gLBS8vSN0PL8iFZHqjgobXuhIFsyM40gyqweGZxfOYeAIe3jkyMWQ3MM85DMQQ/exec"; 
+    // =================================================================
+
+    let products = [];
+    let cart = []; // ระบบตะกร้าเก็บ [{productId, productName, price, qty, imageUrl, maxStock}]
+    let activeCategory = 'all';
+    let searchQuery = '';
+    let currentLiffView = 'cart'; // cart, shipping
+    
+    // ข้อมูลจำลองสำหรับทดสอบนอก LINE (Local Debug)
+    let currentUser = {
+      userId: 'U1234567890demo',
+      displayName: 'ลูกค้าจำลอง (Web Debug)',
+      pictureUrl: 'https://placehold.co/100?text=Mock'
+    };
+    
+    // ฟังก์ชันจัดรูปแบบ URL รูปภาพของ Google Drive ป้องกันปัญหารูปไม่ขึ้น
+    function formatDriveImageUrl(url) {
+      if (!url) return 'https://placehold.co/400?text=No+Image';
+      const reg = /(?:id=|\/d\/|export=download&id=)([a-zA-Z0-9_-]{25,})/;
+      const match = url.match(reg);
+      if (match && match[1]) {
+        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
+      }
+      return url;
+    }
+    
+    window.onload = function() {
+      // โหลดการ์ด Skeleton ทันทีเพื่อปรับปรุง UX
+      renderSkeletons();
+      
+      // เริ่มต้นระบบ LINE LIFF SDK
+      try {
+        liff.init({ liffId: "2010231541-8LJmWbte" })
+          .then(() => {
+            if (liff.isLoggedIn()) {
+              liff.getProfile()
+                .then(profile => {
+                  currentUser = profile;
+                  document.getElementById('userName').innerText = profile.displayName;
+                  if (profile.pictureUrl) {
+                    document.getElementById('userPicture').src = profile.pictureUrl;
+                  }
+                  loadProducts();
+                })
+                .catch(err => {
+                  console.error('ไม่สามารถดึงข้อมูลโปรไฟล์ได้:', err);
+                  document.getElementById('userName').innerText = currentUser.displayName;
+                  loadProducts();
+                });
+            } else {
+              if (liff.isInClient()) {
+                liff.login();
+              } else {
+                console.log("เปิดภายนอก LINE Client หรือใน Iframe -> เข้าสู่โหมดจำลองบัญชีผู้ใช้");
+                document.getElementById('userName').innerText = currentUser.displayName;
+                document.getElementById('userPicture').src = currentUser.pictureUrl;
+                loadProducts();
+              }
+            }
+          })
+          .catch((err) => {
+            console.log("LIFF Init ล้มเหลว (น่าจะรันบนบราวเซอร์ทั่วไป):", err.message);
+            document.getElementById('userName').innerText = currentUser.displayName;
+            document.getElementById('userPicture').src = currentUser.pictureUrl;
+            loadProducts();
+          });
+      } catch (err) {
+        console.error("เกิดข้อผิดพลาดในการโหลดระบบ LIFF:", err);
+        loadProducts();
+      }
+    };
+    
+    function renderSkeletons() {
+      const grid = document.getElementById('productsGrid');
+      let skeletonHtml = '';
+      for (let i = 0; i < 4; i++) {
+        skeletonHtml += `
+          <div class="skeleton-card">
+            <div class="skeleton-img shimmer"></div>
+            <div class="skeleton-info">
+              <div class="skeleton-title shimmer"></div>
+              <div class="skeleton-text shimmer" style="width: 90%;"></div>
+              <div class="skeleton-text shimmer" style="width: 70%;"></div>
+              <div class="skeleton-row">
+                <div class="skeleton-price shimmer"></div>
+              </div>
+              <div class="skeleton-btn shimmer"></div>
+            </div>
+          </div>
+        `;
+      }
+      grid.innerHTML = skeletonHtml;
+    }
+    
+    function loadProducts() {
+      if (BACKEND_API_URL && BACKEND_API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
+        fetch(`${BACKEND_API_URL}?action=getProducts`)
+          .then(response => response.json())
+          .then(res => {
+            if (res.error) {
+              alert('เกิดข้อผิดพลาดจากระบบหลังบ้าน: ' + res.error);
+              return;
+            }
+            products = res;
+            buildCategoryTabs();
+            renderProducts();
+          })
+          .catch(err => {
+            console.warn('ดึงข้อมูลผ่าน API ล้มเหลว พยายามดึงผ่านโหมดปกติ:', err);
+            fallbackLoadProducts();
+          });
+      } else {
+        fallbackLoadProducts();
+      }
+    }
+    
+    function fallbackLoadProducts() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(jsonString) {
+            const res = JSON.parse(jsonString);
+            if (res.error) {
+              alert('เกิดข้อผิดพลาด: ' + res.error);
+              return;
+            }
+            products = res;
+            buildCategoryTabs();
+            renderProducts();
+          })
+          .withFailureHandler(function(err) {
+            alert('ไม่สามารถดึงข้อมูลสินค้าจากหลังบ้านได้: ' + err.toString());
+          })
+          .getProductsAPI();
+      } else {
+        console.log('ระบบทำงานในโหมดตัวอย่าง (ไม่มี API)');
+      }
+    }
+    
+    function buildCategoryTabs() {
+      const categories = ['all'];
+      products.forEach(item => {
+        if (item.category && !categories.includes(item.category)) {
+          categories.push(item.category);
+        }
+      });
+      
+      const tabContainer = document.getElementById('categoryTabs');
+      tabContainer.innerHTML = categories.map(cat => {
+        const isActive = cat === activeCategory ? 'active' : '';
+        const catLabel = cat === 'all' ? 'ทั้งหมด' : cat;
+        return `<div class="tab ${isActive}" onclick="filterCategory('${cat}')">${catLabel}</div>`;
+      }).join('');
+    }
+    
+    function filterCategory(cat) {
+      activeCategory = cat;
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        const text = tab.innerText;
+        const targetText = cat === 'all' ? 'ทั้งหมด' : cat;
+        if (text === targetText) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+      renderProducts();
+    }
+    
+    function handleSearch() {
+      searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+      renderProducts();
+    }
+    
+    function renderProducts() {
+      const grid = document.getElementById('productsGrid');
+      
+      let filtered = activeCategory === 'all' 
+        ? products 
+        : products.filter(p => p.category === activeCategory);
+      
+      if (searchQuery) {
+        filtered = filtered.filter(p => 
+          p.productName.toLowerCase().includes(searchQuery) || 
+          (p.category && p.category.toLowerCase().includes(searchQuery)) ||
+          (p.description && p.description.toLowerCase().includes(searchQuery))
+        );
+      }
+        
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 5rem 0; font-size: 0.9rem;">ไม่พบสินค้าที่คุณต้องการ</div>`;
+        return;
+      }
+      
+      grid.innerHTML = filtered.map(item => {
+        const isAvailable = item.stock > 0;
+        const stockClass = isAvailable ? 'available' : 'empty';
+        const stockText = isAvailable ? 'พร้อมส่ง' : 'สินค้าหมด';
+        
+        const imgUrl = formatDriveImageUrl(item.imageUrl);
+        const catBadge = item.category ? `<div class="cat-tag">${item.category}</div>` : '';
+        
+        // เช็คว่าสินค้านี้อยู่ในตะกร้าแล้วหรือยัง
+        const cartItem = cart.find(c => c.productId === item.productId);
+        
+        // ส่วนควบคุม Action ด้านล่างการ์ด (Shopee style)
+        let actionBtnHtml = '';
+        if (!isAvailable) {
+          actionBtnHtml = `<button class="order-btn" disabled>สินค้าหมดชั่วคราว</button>`;
+        } else if (cartItem) {
+          // หากอยู่ในตะกร้าแล้ว ให้แสดงปุ่มระบุจำนวนแบบหรูหรา
+          actionBtnHtml = `
+            <div class="qty-selector-card">
+              <button class="qty-card-btn" onclick="updateCartQty('${item.productId}', -1)">&minus;</button>
+              <span class="qty-card-val">${cartItem.qty}</span>
+              <button class="qty-card-btn" onclick="updateCartQty('${item.productId}', 1)">&plus;</button>
+            </div>
+          `;
+        } else {
+          // หากยังไม่อยู่ในตะกร้า ให้แสดงปุ่มกดหย่อนลงตะกร้า
+          actionBtnHtml = `
+            <button class="order-btn" onclick="addToCart('${item.productId}')">
+              🛒 ใส่ตะกร้า
+            </button>
+          `;
+        }
+        
+        return `
+          <div class="product-card" id="card-${item.productId}">
+            <div class="img-box">
+              <img src="${imgUrl}" class="product-img" loading="lazy" onerror="this.src='https://placehold.co/400?text=Image+Error'">
+              ${catBadge}
+            </div>
+            <div class="product-info">
+              <h2 class="product-title" title="${item.productName}">${item.productName}</h2>
+              <p class="product-desc" title="${item.description || '-'}">${item.description || 'ไม่มีรายละเอียดสินค้า'}</p>
+              
+              <div class="price-stock-row">
+                <span class="price">฿${item.price.toLocaleString()}</span>
+                <span class="stock-status ${stockClass}">${stockText}</span>
+              </div>
+              
+              <div class="card-action-container">
+                ${actionBtnHtml}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // === ระบบควบคุมตรรกะตะกร้าสินค้า (Cart Engines) ===
+    
+    function addToCart(productId) {
+      const product = products.find(p => p.productId === productId);
+      if (!product || product.stock <= 0) return;
+      
+      const cartItem = cart.find(c => c.productId === productId);
+      if (cartItem) {
+        if (cartItem.qty < product.stock) {
+          cartItem.qty++;
+        }
+      } else {
+        cart.push({
+          productId: product.productId,
+          productName: product.productName,
+          price: product.price,
+          qty: 1,
+          imageUrl: product.imageUrl,
+          maxStock: product.stock
+        });
+      }
+      
+      updateCartUI();
+      renderProducts();
+    }
+    
+    function updateCartQty(productId, change) {
+      const cartItem = cart.find(c => c.productId === productId);
+      if (!cartItem) return;
+      
+      cartItem.qty += change;
+      if (cartItem.qty <= 0) {
+        // ลบออกจากตะกร้าถ้าเป็น 0
+        cart = cart.filter(c => c.productId !== productId);
+      } else if (cartItem.qty > cartItem.maxStock) {
+        cartItem.qty = cartItem.maxStock;
+        alert(`ขออภัย สินค้านี้มีในคลังจำกัดเพียง ${cartItem.maxStock} ชิ้นเท่านั้น`);
+      }
+      
+      updateCartUI();
+      renderProducts();
+      renderCartItems();
+    }
+    
+    function updateCartUI() {
+      // คำนวณจำนวนชิ้นสะสมทั้งหมด
+      const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+      document.getElementById('cartCountBadge').innerText = totalQty;
+      
+      // คำนวณราคารวม
+      const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      document.getElementById('summaryTotal').innerText = `฿${totalPrice.toLocaleString()}`;
+    }
+    
+    // === ระบบแสดงผลลิ้นชักตะกร้า (Cart Drawer Controller) ===
+    
+    function openCartDrawer() {
+      document.getElementById('cartDrawerBackdrop').classList.add('active');
+      document.getElementById('cartDrawer').classList.add('active');
+      backToCart(); // รีเซ็ตมาที่หน้าแรก (ลิสต์ตะกร้า) เสมอ
+      renderCartItems();
+    }
+    
+    function closeCartDrawer() {
+      document.getElementById('cartDrawerBackdrop').classList.remove('active');
+      document.getElementById('cartDrawer').classList.remove('active');
+    }
+    
+    function renderCartItems() {
+      const listContainer = document.getElementById('cartItemsList');
+      if (cart.length === 0) {
+        listContainer.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 4rem 0;">
+            <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">🛒</span>
+            ตะกร้าสินค้ายังว่างเปล่าอยู่ครับ
+          </div>
+        `;
+        document.getElementById('drawerActionBtn').disabled = true;
+        return;
+      }
+      
+      document.getElementById('drawerActionBtn').disabled = false;
+      listContainer.innerHTML = cart.map(item => {
+        const imgUrl = formatDriveImageUrl(item.imageUrl);
+        return `
+          <div class="cart-item-row">
+            <img src="${imgUrl}" class="cart-item-img" onerror="this.src='https://placehold.co/200?text=No+Image'">
+            <div class="cart-item-info">
+              <div class="cart-item-name">${item.productName}</div>
+              <div class="cart-item-price">฿${item.price.toLocaleString()}</div>
+            </div>
+            
+            <!-- ปุ่มปรับจำนวนใน Drawer -->
+            <div class="qty-selector-drawer">
+              <button class="qty-drawer-btn" onclick="updateCartQty('${item.productId}', -1)">&minus;</button>
+              <span class="qty-drawer-val">${item.qty}</span>
+              <button class="qty-drawer-btn" onclick="updateCartQty('${item.productId}', 1)">&plus;</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // === โฟลว์การเช็คเอาต์ / ยืนยันข้อมูลจัดส่ง ===
+    
+    function proceedToShipping() {
+      if (cart.length === 0) return;
+      
+      if (currentLiffView === 'cart') {
+        // สลับไปแสดงหน้าฟอร์มที่อยู่จัดส่ง
+        document.getElementById('cartListView').classList.remove('active');
+        document.getElementById('shippingFormView').classList.add('active');
+        
+        document.getElementById('drawerBackBtn').style.display = 'block';
+        document.getElementById('drawerActionBtn').innerText = '✅ ยืนยันคำสั่งซื้อทั้งหมด';
+        document.getElementById('summaryLabel').innerText = 'ราคารวมชำระ';
+        currentLiffView = 'shipping';
+      } else {
+        // หากอยู่หน้าฟอร์มอยู่แล้ว ให้ทำรายการสั่งซื้อ
+        // บังคับให้ตรวจสอบ validation ของฟอร์มจัดส่ง
+        const form = document.getElementById('shippingForm');
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return;
+        }
+        
+        // ดำเนินการสั่งเช็คเอาต์ส่งข้อมูลข้าม API
+        triggerCheckoutSubmit();
+      }
+    }
+    
+    function backToCart() {
+      document.getElementById('shippingFormView').classList.remove('active');
+      document.getElementById('cartListView').classList.add('active');
+      
+      document.getElementById('drawerBackBtn').style.display = 'none';
+      document.getElementById('drawerActionBtn').innerText = '📦 ดำเนินการสั่งซื้อ';
+      document.getElementById('summaryLabel').innerText = 'ยอดรวมทั้งหมด';
+      currentLiffView = 'cart';
+    }
+    
+    function triggerCheckoutSubmit() {
+      const name = document.getElementById('customerName').value.trim();
+      const phone = document.getElementById('customerPhone').value.trim();
+      const address = document.getElementById('customerAddress').value.trim();
+      
+      showLoader('กำลังบันทึกคำสั่งซื้อและจัดส่งบิล...');
+      
+      // เตรียมข้อมูลตะกร้าสินค้าเพื่อส่งไปที่หลังบ้าน
+      const cartDataJson = JSON.stringify(cart.map(item => ({
+        productId: item.productId,
+        productName: item.productName,
+        price: item.price,
+        qty: item.qty
+      })));
+      
+      if (BACKEND_API_URL && BACKEND_API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
+        // ยิงข้อมูลคำสั่งซื้อผ่าน REST API หลังบ้าน
+        const url = `${BACKEND_API_URL}?action=createOrder&userId=${encodeURIComponent(currentUser.userId)}&displayName=${encodeURIComponent(currentUser.displayName)}&cartItems=${encodeURIComponent(cartDataJson)}&customerName=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&address=${encodeURIComponent(address)}`;
+        
+        fetch(url)
+          .then(response => response.json())
+          .then(res => {
+            hideLoader();
+            if (res.error) {
+              alert('สั่งซื้อล้มเหลว: ' + res.error);
+              return;
+            }
+            closeCartDrawer();
+            
+            // ล้างข้อมูลตะกร้าสินค้าทั้งหมดหลังสั่งซื้อสำเร็จ
+            cart = [];
+            updateCartUI();
+            renderProducts();
+            
+            // แสดงหน้าสั่งสำเร็จ
+            document.getElementById('modalBackdrop').classList.add('active');
+            document.getElementById('successModal').classList.add('active');
+          })
+          .catch(err => {
+            hideLoader();
+            console.error('API Checkout Error:', err);
+            fallbackCheckout(cartDataJson, name, phone, address);
+          });
+      } else {
+        fallbackCheckout(cartDataJson, name, phone, address);
+      }
+    }
+    
+    function fallbackCheckout(cartDataJson, name, phone, address) {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(jsonString) {
+            hideLoader();
+            const res = JSON.parse(jsonString);
+            if (res.error) {
+              alert('สั่งซื้อล้มเหลว: ' + res.error);
+              return;
+            }
+            closeCartDrawer();
+            cart = [];
+            updateCartUI();
+            renderProducts();
+            
+            document.getElementById('modalBackdrop').classList.add('active');
+            document.getElementById('successModal').classList.add('active');
+          })
+          .withFailureHandler(function(err) {
+            hideLoader();
+            alert('ล้มเหลวในการเชื่อมต่อระบบหลังบ้าน: ' + err.toString());
+          })
+          .createOrderFromLiff(currentUser.userId, currentUser.displayName, cartDataJson, name, phone, address);
+      } else {
+        hideLoader();
+        alert('กรุณาตั้งค่า BACKEND_API_URL ก่อนทำรายการเช็คเอาต์');
+      }
+    }
+    
+    function showLoader(text) {
+      document.getElementById('loaderText').innerText = text;
+      document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+    
+    function hideLoader() {
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+    
+    function closeLiffWindow() {
+      document.getElementById('modalBackdrop').classList.remove('active');
+      document.getElementById('successModal').classList.remove('active');
+      
+      try {
+        liff.closeWindow();
+      } catch (err) {
+        console.log('ปิดหน้าต่าง LIFF สำเร็จ (หรือรันข้างนอกห้องแชทเลยไม่ส่งผลอะไร)');
+      }
+    }
+  </script>
+</body>
+</html>
